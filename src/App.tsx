@@ -1,13 +1,12 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import DashboardLayoutAccountSidebar from "./DashboardLayoutAccountSidebar"
 
 function App() {
 
   return (
-      <h1>Proyecto Fix8</h1>
-  )
+    <div style={{ height: '100vh' }}>
+      <DashboardLayoutAccountSidebar />
+    </div>
+  );
 }
 
 export default App
