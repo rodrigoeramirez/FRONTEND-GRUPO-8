@@ -8,7 +8,6 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
-import { createTheme } from '@mui/material/styles';
 import ListAlt from '@mui/icons-material/ListAlt';
 import PeopleAlt from '@mui/icons-material/PeopleAlt';
 import { AppProvider } from '@toolpad/core/AppProvider';
@@ -20,7 +19,12 @@ import {
   SignOutButton,
   AccountPreviewProps,
 } from '@toolpad/core/Account';
-import type { Navigation, Router, Session } from '@toolpad/core/AppProvider';
+import type { Navigation, Router, Session, Branding } from '@toolpad/core/AppProvider';
+
+const Brand: Branding = {
+  title:"Grupo 8",
+  logo: ""
+};
 
 const NAVIGATION: Navigation = [
   {
@@ -39,21 +43,6 @@ const NAVIGATION: Navigation = [
   },
 ];
 
-const demoTheme = createTheme({
-  cssVariables: {
-    colorSchemeSelector: 'data-toolpad-color-scheme',
-  },
-  colorSchemes: { light: true, dark: true },
-  breakpoints: {
-    values: {
-      xs: 0,
-      sm: 600,
-      md: 600,
-      lg: 1200,
-      xl: 1536,
-    },
-  },
-});
 
 function DemoPageContent({ pathname }: { pathname: string }) {
   return (
@@ -195,10 +184,6 @@ function SidebarFooterAccount({ mini }: SidebarFooterProps) {
   );
 }
 
-interface DemoProps {
-  
-  window?: () => Window;
-}
 
 const demoSession = {
   user: {
@@ -208,8 +193,8 @@ const demoSession = {
   },
 };
 
-export default function DashboardLayoutAccountSidebar(props: DemoProps) {
-  const { window } = props;
+export default function DashboardLayoutAccountSidebar() {
+
 
   const [pathname, setPathname] = React.useState('/dashboard');
 
@@ -221,8 +206,6 @@ export default function DashboardLayoutAccountSidebar(props: DemoProps) {
     };
   }, [pathname]);
 
-  // Remove this const when copying and pasting into your project.
-  const demoWindow = window !== undefined ? window() : undefined;
 
   const [session, setSession] = React.useState<Session | null>(demoSession);
   const authentication = React.useMemo(() => {
@@ -240,13 +223,17 @@ export default function DashboardLayoutAccountSidebar(props: DemoProps) {
     <AppProvider
       navigation={NAVIGATION}
       router={router}
-      theme={demoTheme}
-      window={demoWindow}
       authentication={authentication}
       session={session}
+      branding={Brand}
     >
       <DashboardLayout
-        slots={{ toolbarAccount: () => null, sidebarFooter: SidebarFooterAccount }}
+         slots={{
+          toolbarAccount: () => null,
+          sidebarFooter: SidebarFooterAccount,
+          
+        }}
+        
       >
         <DemoPageContent pathname={pathname} />
       </DashboardLayout>
