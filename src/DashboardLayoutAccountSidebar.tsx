@@ -11,6 +11,7 @@ import Divider from '@mui/material/Divider';
 import ListAlt from '@mui/icons-material/ListAlt';
 import PeopleAlt from '@mui/icons-material/PeopleAlt';
 import { AppProvider } from '@toolpad/core/AppProvider';
+import DataTable from './DataTable';
 import { DashboardLayout, SidebarFooterProps } from '@toolpad/core/DashboardLayout';
 import {
   Account,
@@ -55,7 +56,16 @@ function DemoPageContent({ pathname }: { pathname: string }) {
         textAlign: 'center',
       }}
     >
-      <Typography>Tabla de {pathname}</Typography>
+      {pathname === '/requerimientos' ? (
+        <DataTable /> // Renderiza la tabla
+      ) : (
+        <Typography>Tabla de {pathname}</Typography>
+      )},
+      {pathname === '/usuarios' ? (
+        <DataTable /> // Renderiza la tabla
+      ) : (
+        <Typography>Tabla de {pathname}</Typography>
+      )}
     </Box>
   );
 }
