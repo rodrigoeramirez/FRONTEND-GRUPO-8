@@ -11,15 +11,9 @@ import Divider from '@mui/material/Divider';
 import ListAlt from '@mui/icons-material/ListAlt';
 import PeopleAlt from '@mui/icons-material/PeopleAlt';
 import { AppProvider } from '@toolpad/core/AppProvider';
-import DataTable from './DataTable';
+import { CrudGrid } from './CrudGrid'; // Importa tu componente CrudGrid
 import { DashboardLayout, SidebarFooterProps } from '@toolpad/core/DashboardLayout';
-import {
-  Account,
-  AccountPreview,
-  AccountPopoverFooter,
-  SignOutButton,
-  AccountPreviewProps,
-} from '@toolpad/core/Account';
+import { Account, AccountPreview, AccountPopoverFooter, SignOutButton, AccountPreviewProps,} from '@toolpad/core/Account';
 import type { Navigation, Router, Session, Branding } from '@toolpad/core/AppProvider';
 
 const Brand: Branding = {
@@ -43,9 +37,20 @@ const NAVIGATION: Navigation = [
     icon: <PeopleAlt />,
   },
 ];
-
-
 function DemoPageContent({ pathname }: { pathname: string }) {
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 90 },
+    { field: 'name', headerName: 'Name', width: 150 },
+    { field: 'age', headerName: 'Age', type: 'number', width: 110 },
+    { field: 'email', headerName: 'Email', width: 200 },
+  ];
+
+  const initialRows = [
+    { id: 1, name: 'Alice', age: 25, email: 'alice@example.com' },
+    { id: 2, name: 'Bob', age: 30, email: 'bob@example.com' },
+    { id: 3, name: 'Charlie', age: 35, email: 'charlie@example.com' },
+  ];
+
   return (
     <Box
       sx={{
@@ -56,13 +61,12 @@ function DemoPageContent({ pathname }: { pathname: string }) {
         textAlign: 'center',
       }}
     >
-      {pathname === '/requerimientos' ? (
-        <DataTable /> // Renderiza la tabla
-      ) : (
-        <Typography>Tabla de {pathname}</Typography>
-      )},
-      {pathname === '/usuarios' ? (
-        <DataTable /> // Renderiza la tabla
+      {['/requerimientos', '/usuarios'].includes(pathname) ? (
+        <CrudGrid
+          columns={columns}
+          initialRows={initialRows}
+          entityName={pathname.slice(1)} // Usa el nombre de la ruta como entidad
+        />
       ) : (
         <Typography>Tabla de {pathname}</Typography>
       )}
@@ -240,11 +244,12 @@ export default function DashboardLayoutAccountSidebar() {
       <DashboardLayout
          slots={{
           toolbarAccount: () => null,
-          sidebarFooter: SidebarFooterAccount,
-          
+          sidebarFooter: SidebarFooterAccount,  
         }}
+
         
-      >
+      > 
+
         <DemoPageContent pathname={pathname} />
       </DashboardLayout>
     </AppProvider>
