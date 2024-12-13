@@ -63,24 +63,24 @@ export const CrudGrid: React.FC<CrudGridProps> = ({ columns, initialRows, entity
         columns={[
           ...columns,
           {
-            field: 'actions',
-            headerName: 'Actions',
+            field: 'acciones',
+            headerName: 'Acciones',
             type: 'actions',
             width: 200,
             getActions: (params) => [
               <GridActionsCellItem
                 icon={<VisibilityIcon />}
-                label="View"
+                label="Ver"
                 onClick={() => handleViewClick(params.row)}
               />,
               <GridActionsCellItem
                 icon={<EditIcon />}
-                label="Edit"
+                label="Editar"
                 onClick={() => handleEditClick(params.row)}
               />,
               <GridActionsCellItem
                 icon={<DeleteIcon />}
-                label="Delete"
+                label="Eliminar"
                 onClick={() => handleDeleteClick(params.row)}
               />,
             ],
@@ -90,21 +90,21 @@ export const CrudGrid: React.FC<CrudGridProps> = ({ columns, initialRows, entity
 
       {/* Diálogo para confirmar eliminación */}
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle>Confirmar Eliminación</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete the {entityName} "{selectedRow?.name}"?
+          Estás seguro que desea eliminar {entityName} "{selectedRow?.name}"?
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
+          <Button onClick={() => setOpenDeleteDialog(false)}>Cancelar</Button>
           <Button onClick={handleConfirmDelete} color="error">
-            Delete
+            Eliminar
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Diálogo para editar */}
       <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)}>
-        <DialogTitle>Edit {entityName}</DialogTitle>
+        <DialogTitle>Editar {entityName}</DialogTitle>
         <DialogContent>
           {columns
             .filter((col) => col.field !== 'actions') // No incluir la columna de acciones
@@ -121,16 +121,16 @@ export const CrudGrid: React.FC<CrudGridProps> = ({ columns, initialRows, entity
             ))}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenEditDialog(false)}>Cancel</Button>
+          <Button onClick={() => setOpenEditDialog(false)}>Cancelar</Button>
           <Button onClick={handleEditSubmit} color="primary">
-            Save
+            Guardar
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Diálogo para visualizar */}
       <Dialog open={openViewDialog} onClose={() => setOpenViewDialog(false)}>
-        <DialogTitle>View {entityName}</DialogTitle>
+        <DialogTitle>Ver {entityName}</DialogTitle>
         <DialogContent>
           {columns
             .filter((col) => col.field !== 'actions') // No incluir la columna de acciones
@@ -150,17 +150,17 @@ export const CrudGrid: React.FC<CrudGridProps> = ({ columns, initialRows, entity
             ))}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenViewDialog(false)}>Exit</Button>
+          <Button onClick={() => setOpenViewDialog(false)}>Salir</Button>
           <Button
             onClick={() => setIsEditable(true)}
             color="primary"
             disabled={isEditable} // Desactivar si ya está en modo editable
           >
-            Edit
+            Editar
           </Button>
           {isEditable && (
             <Button onClick={handleEditSubmit} color="primary">
-              Save
+              Guardar
             </Button>
           )}
         </DialogActions>

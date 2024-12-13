@@ -11,10 +11,12 @@ import Divider from '@mui/material/Divider';
 import ListAlt from '@mui/icons-material/ListAlt';
 import PeopleAlt from '@mui/icons-material/PeopleAlt';
 import { AppProvider } from '@toolpad/core/AppProvider';
-import { CrudGrid } from './CrudGrid'; // Importa tu componente CrudGrid
+import  {CrudGrid}  from "./CrudGrid"; // Importa tu componente CrudGrid
 import { DashboardLayout, SidebarFooterProps } from '@toolpad/core/DashboardLayout';
 import { Account, AccountPreview, AccountPopoverFooter, SignOutButton, AccountPreviewProps,} from '@toolpad/core/Account';
 import type { Navigation, Router, Session, Branding } from '@toolpad/core/AppProvider';
+import { useEffect, useState } from 'react';
+import { CircularProgress } from '@mui/material';
 
 const Brand: Branding = {
   title:"Grupo 8",
@@ -37,19 +39,102 @@ const NAVIGATION: Navigation = [
     icon: <PeopleAlt />,
   },
 ];
-function DemoPageContent({ pathname }: { pathname: string }) {
-  const columns = [
-    { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'name', headerName: 'Name', width: 150 },
-    { field: 'age', headerName: 'Age', type: 'number', width: 110 },
-    { field: 'email', headerName: 'Email', width: 200 },
-  ];
 
-  const initialRows = [
-    { id: 1, name: 'Alice', age: 25, email: 'alice@example.com' },
-    { id: 2, name: 'Bob', age: 30, email: 'bob@example.com' },
-    { id: 3, name: 'Charlie', age: 35, email: 'charlie@example.com' },
-  ];
+type Config = {
+  columns: { field: string; headerName: string; width: number; type?: string }[];
+  endpoint: string; // Agregamos un endpoint asociado a cada tipo de datos
+};
+
+function getConfig(pathname: string): Config {
+  switch (pathname) {
+    case '/usuarios':
+      return {
+        columns: [
+          { field: 'nombre', headerName: 'Nombre', width: 150 },
+          { field: 'apellido', headerName: 'Apellido', width: 150 },
+          { field: 'username', headerName: 'Username', width: 200 },
+          { field: 'email', headerName: 'Correo Electrónico', width: 200 },
+          { field: 'legajo', headerName: 'Legajo', width: 120 },
+          { field: 'cargo', headerName: 'Cargo', width: 200 },
+          { field: 'departamento', headerName: 'Departamento', width: 200 },
+        ],
+        endpoint: 'http://localhost:8080/usuarios', // Ruta del endpoint para obtener usuarios
+      };
+
+    case '/requerimientos':
+      return {
+        columns: [
+          { field: 'id', headerName: 'ID', width: 90 },
+          { field: 'title', headerName: 'Título', width: 200 },
+          { field: 'description', headerName: 'Descripción', width: 300 },
+          { field: 'status', headerName: 'Estado', width: 150 },
+        ],
+        endpoint: '/api/requerimientos', // Ruta del endpoint para obtener requerimientos
+      };
+
+    default:
+      return {
+        columns: [],
+        endpoint: '',
+      };
+  }
+}
+
+function DemoPageContent({ pathname }: { pathname: string }) {
+
+  interface Usuario {
+    nombre: string;
+    apellido: string;
+    username: string;
+    email: string;
+    legajo: string;
+    departamento: string;
+    cargo: string;
+  }
+
+  const { columns, endpoint } = getConfig(pathname);
+  const [rows, setRows] = useState([]); // Estado para las filas
+  const [loading, setLoading] = useState(true); // Estado para el indicador de carga
+  const [error, setError] = useState<string | null>(null); // Estado para manejar errores
+
+  useEffect(() => {
+    if (!endpoint) return;
+
+    // Función para obtener datos
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(endpoint);
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+        const data = await response.json();
+
+        // Transforma los datos para que coincidan con las columnas requeridas
+        const transformedRows = data.map((item: Usuario) => ({
+          id: item.legajo, // Material-UI Data Grid requiere que cada fila tenga un identificador único (id). Por seguridad repito el legajo y no pongo el id de la BD.
+          nombre: item.nombre,
+          apellido: item.apellido,
+          username: item.username.trim(),
+          email: item.email,
+          legajo: item.legajo,
+          cargo: item.cargo,
+          departamento: item.departamento,
+        }));
+        
+
+        setRows(transformedRows); // Asigna los datos transformados al estado
+      } catch (err) {
+        setError((err as Error).message || 'Ocurrió un error');
+      } finally {
+        setLoading(false); // Finaliza el indicador de carga
+      }
+    };
+
+    fetchData();
+  }, [endpoint]);
 
   return (
     <Box
@@ -61,14 +146,18 @@ function DemoPageContent({ pathname }: { pathname: string }) {
         textAlign: 'center',
       }}
     >
-      {['/requerimientos', '/usuarios'].includes(pathname) ? (
+      {loading ? (
+        <CircularProgress /> // Indicador de carga
+      ) : error ? (
+        <Typography color="error">{error}</Typography> // Mensaje de error
+      ) : columns.length > 0 && rows.length > 0 ? (
         <CrudGrid
           columns={columns}
-          initialRows={initialRows}
+          initialRows={rows}
           entityName={pathname.slice(1)} // Usa el nombre de la ruta como entidad
         />
       ) : (
-        <Typography>Tabla de {pathname}</Typography>
+        <Typography>No hay datos disponibles para la ruta: {pathname}</Typography>
       )}
     </Box>
   );
@@ -246,8 +335,6 @@ export default function DashboardLayoutAccountSidebar() {
           toolbarAccount: () => null,
           sidebarFooter: SidebarFooterAccount,  
         }}
-
-        
       > 
 
         <DemoPageContent pathname={pathname} />
