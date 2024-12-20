@@ -99,22 +99,42 @@ function DemoPageContent({ pathname }: { pathname: string }) {
 
   useEffect(() => {
     if (!endpoint) return;
-
+  
     // Función para obtener datos
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-
+  
       try {
-        const response = await fetch(endpoint);
-        if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
+        // Obtén el token del localStorage
+        const token = localStorage.getItem("token");
+  
+        // Configura los encabezados de la solicitud con un tipo explícito
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+  
+        // Si el token está presente, lo agregamos a los encabezados
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
         }
+  
+        const response = await fetch(endpoint, {
+          method: "GET", // O el método adecuado
+          headers: headers, // Incluye los encabezados con el token
+        });
+  
+        if (!response.ok) {
+          // Maneja los errores de la respuesta
+          const errorData = await response.json();
+          throw new Error(`Error: ${errorData.message || response.statusText}`);
+        }
+  
         const data = await response.json();
-
+  
         // Transforma los datos para que coincidan con las columnas requeridas
         const transformedRows = data.map((item: Usuario) => ({
-          id: item.legajo, // Material-UI Data Grid requiere que cada fila tenga un identificador único (id). Por seguridad repito el legajo y no pongo el id de la BD.
+          id: item.legajo,
           nombre: item.nombre,
           apellido: item.apellido,
           username: item.username.trim(),
@@ -123,18 +143,19 @@ function DemoPageContent({ pathname }: { pathname: string }) {
           cargo: item.cargo,
           departamento: item.departamento,
         }));
-        
-
-        setRows(transformedRows); // Asigna los datos transformados al estado
+  
+        setRows(transformedRows);
       } catch (err) {
         setError((err as Error).message || 'Ocurrió un error');
       } finally {
-        setLoading(false); // Finaliza el indicador de carga
+        setLoading(false);
       }
     };
-
+  
     fetchData();
   }, [endpoint]);
+  
+  
 
   return (
     <Box
