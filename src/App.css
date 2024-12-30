@@ -5,6 +5,24 @@
   text-align: center;
 }
 
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* La altura total de la ventana */
+  background-color: #f4f4f4; /* Color de fondo opcional */
+  margin: 0; /* Sin márgenes */
+}
+
+.route-content {
+  width: 100%;
+  max-width: 600px; /* Tamaño máximo del contenido */
+  padding: 20px;
+  background: white; /* Fondo blanco */
+  border-radius: 10px; /* Bordes redondeados */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra opcional */
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

@@ -1,21 +1,34 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./components/Login"; // Tu componente de Login
-import Register from "./components/Register"; // Tu componente de Register
-import Dashboard from "./components/DashboardLayoutAccountSidebar"; // Tu componente de Dashboard
+import Login from "./components/Login";
+import Register from "./components/Register";
+import Dashboard from "./components/DashboardLayoutAccountSidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import "./App.css"; // Asegúrate de importar tu CSS
 
-const App: React.FC = () => { //
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Login />} /> {/* Ruta inicial */}
-        <Route path="/register" element={<Register />} /> {/* Registro */}
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} /> {/* Dashboard */}
-      </Routes>
-    </Router>
-  );
+const App: React.FC = () => {
+    return (
+        <div className="container">
+            <Router>
+                <div className="route-content">
+                    <Routes>
+                        <Route path="/" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route
+                            path="/dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <Dashboard />
+                                </ProtectedRoute>
+                            }
+                        />
+                    </Routes>
+                </div>
+            </Router>
+        </div>
+    );
 };
 
 export default App;
+
 
