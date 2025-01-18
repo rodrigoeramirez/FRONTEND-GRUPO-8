@@ -1,26 +1,45 @@
+/* App.css */
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* Contenedor principal para toda la aplicación */
+.container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Alinea el contenido al inicio */
 }
 
-.container {
+/* Estilo para las páginas Login y Register */
+.route-content {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* La altura total de la ventana */
-  background-color: #f4f4f4; /* Color de fondo opcional */
-  margin: 0; /* Sin márgenes */
+  flex: 1; /* Ocupa todo el espacio disponible en la pantalla */
 }
 
-.route-content {
+/* Estilo específico para el formulario de Login y Register */
+.login-register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
   width: 100%;
-  max-width: 600px; /* Tamaño máximo del contenido */
-  padding: 20px;
-  background: white; /* Fondo blanco */
-  border-radius: 10px; /* Bordes redondeados */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra opcional */
+  max-width: 600px; /* Controla el tamaño del formulario */
+  padding: 30px;
+  background-color: white;
+  box-shadow: 0 10px 50px rgba(22, 22, 22, 0.1);
+  border-radius: 8px;
+}
+
+/* Estilos para pantallas pequeñas */
+@media (max-width: 600px) {
+  .login-register-container {
+    padding: 20px;
+  }
 }
 
 .logo {

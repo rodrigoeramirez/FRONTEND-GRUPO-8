@@ -91,6 +91,7 @@ const Login = () => {
   };
 
   return (
+    <div className="login-register-container">
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container
@@ -167,6 +168,7 @@ const Login = () => {
         </Box>
       </Container>
     </ThemeProvider>
+    </div>
   );
 };
 

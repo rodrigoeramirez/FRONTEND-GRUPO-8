@@ -187,6 +187,7 @@ if (response.ok) {
   
 
   return (
+    <div className="login-register-container">
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container
@@ -419,6 +420,7 @@ if (response.ok) {
         </Box>
       </Container>
     </ThemeProvider>
+    </div>
   );
 };
 
