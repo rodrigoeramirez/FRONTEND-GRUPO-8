@@ -6,6 +6,7 @@ interface UserInfo {
   apellido: string;
   email: string;
   sub: string;
+  legajo:string;
 }
 
 interface AuthContextProps {

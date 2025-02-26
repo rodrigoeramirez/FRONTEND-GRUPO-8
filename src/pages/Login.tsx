@@ -11,7 +11,9 @@ import {
   CssBaseline,
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom"; // Hook para manejar la navegación y obtener el state de la redirección.
-
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
 const theme = createTheme({
   palette: {
     mode: "light",
@@ -31,6 +33,7 @@ const Login = () => {
   const [errors, setErrors] = useState({ username: false, password: false }); // Estado para manejar los errores de validación.
   const [errorMessage, setErrorMessage] = useState(""); // Estado para manejar mensajes de error global.
   const [redirectMessage, setRedirectMessage] = useState(""); // Nuevo estado para el mensaje de redirección.
+  const [showPassword, setShowPassword] = useState(false); // Estado para alternar visibilidad
 
   // Leer el mensaje de redirección si existe
   useEffect(() => {
@@ -138,13 +141,26 @@ const Login = () => {
           <TextField
             label="Contraseña"
             name="password"
-            type="password"
+            type={showPassword ? "text" : "password"} // Cambia entre texto y contraseña
             value={form.password}
             onChange={handleChange}
             fullWidth
             margin="normal"
             error={errors.password}
             helperText={errors.password && "Este campo es obligatorio."}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                    tabIndex={-1} // Evita que el botón reciba foco en tabulación
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
 
           <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>

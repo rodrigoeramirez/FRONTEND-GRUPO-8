@@ -9,8 +9,11 @@ import {
   MenuItem,
   Select,
   InputLabel,
-  FormControl, FormHelperText
+  FormControl, FormHelperText,
+  InputAdornment,
+  IconButton
 } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const FormularioEditarUsuario = ({ usuario, onCancel, onSave }) => {
   
@@ -20,6 +23,9 @@ const FormularioEditarUsuario = ({ usuario, onCancel, onSave }) => {
   const [cambiarClave, setCambiarClave] = useState(false);
   const [nuevaClave, setNuevaClave] = useState("");
   const [repetirClave, setRepetirClave] = useState("");
+  // Estados para mostrar u ocultar contraseña
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const [formData, setFormData] = useState({
     nombre: usuario.nombre,
     apellido: usuario.apellido,
@@ -163,7 +169,7 @@ const FormularioEditarUsuario = ({ usuario, onCancel, onSave }) => {
 
     if (onSave) {
       //console.log("Esto es modificadoooooo:", dataToSave);
-      onSave(dataToSave, usuario.legajo); // Guarda los datos
+      onSave(dataToSave, usuario.legajo, usuario.username); // Guarda los datos
     }
     onCancel();
   }
@@ -277,44 +283,72 @@ const FormularioEditarUsuario = ({ usuario, onCancel, onSave }) => {
   </Select>
   <FormHelperText>{errors.departamento_id}</FormHelperText>
 </FormControl>
-      <Button
-        variant="outlined"
-        onClick={() => setCambiarClave(!cambiarClave)}
-        color="primary"
-      >
+<Button variant="outlined" onClick={() => setCambiarClave(!cambiarClave)} color="primary">
         {cambiarClave ? "Cancelar cambio de clave" : "Cambiar clave"}
       </Button>
 
       {cambiarClave && (
-  <>
-    <TextField
-      label="Nueva clave"
-      fullWidth
-      type="password"
-      value={nuevaClave}
-      onChange={(e) => setNuevaClave(e.target.value)}
-      margin="normal"
-    />
-    <TextField
-      label="Repetir nueva clave"
-      fullWidth
-      type="password"
-      value={repetirClave}
-      onChange={(e) => setRepetirClave(e.target.value)}
-      margin="normal"
-    />
-  </>
-)}
+        <>
+          {/* Nueva Clave */}
+          <TextField
+            label="Nueva clave"
+            fullWidth
+            type={showPassword ? "text" : "password"}
+            value={nuevaClave}
+            onChange={(e) => setNuevaClave(e.target.value)}
+            margin="normal"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
 
-
-      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-        <Button variant="outlined" onClick={onCancel} color="error">
-          Cancelar
-        </Button>
-        <Button variant="contained" onClick={handleSave} color="primary">
-          Guardar
-        </Button>
-      </Box>
+          {/* Repetir Clave */}
+          <TextField
+            label="Repetir nueva clave"
+            fullWidth
+            type={showRepeatPassword ? "text" : "password"}
+            value={repetirClave}
+            onChange={(e) => setRepetirClave(e.target.value)}
+            margin="normal"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowRepeatPassword(!showRepeatPassword)} edge="end">
+                    {showRepeatPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </>
+      )}
+  {/* Botones fijos en la parte inferior */}
+  <Box
+    sx={{
+      position: "sticky",
+      bottom: 0,
+      backgroundColor: "#fff",
+      boxShadow: "0px -2px 10px rgba(0, 0, 0, 0.1)",
+      p: 2,
+      zIndex: 1000,
+      display: "flex",
+      justifyContent: "flex-end",
+      gap: 2,
+    }}
+  >
+    <Button variant="outlined" onClick={onCancel} color="error">
+      Cancelar
+    </Button>
+    <Button variant="contained" onClick={handleSave} color="primary">
+      Guardar Cambios
+    </Button>
+  </Box>
 </Box>
 
   );

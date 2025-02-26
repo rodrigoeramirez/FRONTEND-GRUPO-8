@@ -7,6 +7,9 @@ import ProtectedRoute from "./pages/ProtectedRoute";
 import "./App.css"; // Asegúrate de importar tu CSS
 import { UsuarioProvider } from "./context/UsuarioContext";
 import { AuthProvider } from "./context/AuthContext";
+import { RequerimientoProvider } from "./context/RequerimientoContext";
+import { TipoRequerimientoProvider } from "./context/TipoRequerimientoContext";
+import { EstadoProvider } from "./context/EstadoContext";
 
 const App: React.FC = () => {
   return (
@@ -19,13 +22,19 @@ const App: React.FC = () => {
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute>
-                  <AuthProvider>
-                    <UsuarioProvider>
-                      <Dashboard />
-                    </UsuarioProvider>
-                  </AuthProvider>
-                </ProtectedRoute>
+                <TipoRequerimientoProvider>
+                  <EstadoProvider>
+                    <ProtectedRoute>
+                      <AuthProvider>
+                        <UsuarioProvider>
+                          <RequerimientoProvider>
+                            <Dashboard />
+                          </RequerimientoProvider>
+                        </UsuarioProvider>
+                      </AuthProvider>
+                    </ProtectedRoute>
+                  </EstadoProvider>
+                </TipoRequerimientoProvider>
               }
             />
           </Routes>
@@ -36,3 +45,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+    

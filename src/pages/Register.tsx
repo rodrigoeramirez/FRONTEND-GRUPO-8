@@ -263,30 +263,50 @@ if (response.ok) {
 
 
             {/* Nombre de Usuario */}
-<Grid item xs={12}>
+            <Grid item xs={12}>
   <TextField
     label="Nombre de Usuario"
     name="username"
     value={formData.username}
     onChange={(e) => {
-      const newUsername = e.target.value;
-      setFormData({ ...formData, username: newUsername });
-      setErrors({ ...errors, username: "" }); // Limpia el error al escribir
-      validateUsername(newUsername);
+      const newUsername = e.target.value
+        .toLowerCase() // Convierte todo a minúscula
+        .replace(/\s/g, ""); // Elimina espacios en blanco
+
+      // Expresión regular para permitir solo letras, números y los símbolos _.-
+      const validRegex = /^[a-z0-9._-]*$/;
+
+      if (validRegex.test(newUsername)) {
+        setFormData({ ...formData, username: newUsername });
+        setErrors({ ...errors, username: "" }); // Limpia error si es válido
+        validateUsername(newUsername); // Validar disponibilidad en BD
+      }
+    }}
+    onBlur={(e) => {
+      const username = e.target.value;
+      if (username.length < 4 || username.length > 20) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          username: "El nombre de usuario debe tener entre 4 y 20 caracteres.",
+        }));
+      }
     }}
     fullWidth
-    error={!!errors.username || usernameAvailable === false} // Error si está vacío o no disponible
+    error={!!errors.username || usernameAvailable === false}
     helperText={
-      errors.username || // Muestra el mensaje de error si está vacío
-      (usernameAvailable === false ? "El username ya está en uso." : "") // Si no está disponible
+      errors.username ||
+      (usernameAvailable === false
+        ? "El nombre de usuario ya está en uso."
+        : "Debe estar en minúsculas, sin espacios y solo puede contener letras, números, guiones (-), puntos (.) y guiones bajos (_).")
     }
     sx={{
       "& .MuiOutlinedInput-root": {
-        borderColor: usernameAvailable === null
-          ? "" // Sin color cuando no se ha validado
-          : usernameAvailable
-          ? "green" // Verde si está disponible
-          : "red", // Rojo si no está disponible
+        borderColor:
+          usernameAvailable === null
+            ? ""
+            : usernameAvailable
+            ? "green"
+            : "red",
       },
     }}
   />
