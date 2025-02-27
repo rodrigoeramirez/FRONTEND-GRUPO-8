@@ -47,6 +47,34 @@ export const TablaRequerimiento: React.FC<CrudGridProps> = ({ columns, initialRo
   const {comentarios, getComentariosByRequerimiento, createComentarioRequerimiento} = useComentarioRequerimiento();
   const { userInfo } = useAuth(); // Lo utilizo para obtener el id del usuario logeado y cargar en el formulario el emisor.
 
+  const formatearFecha = (fecha) => {
+    // Verificar si la fecha está definida y no es nula
+    if (!fecha) {
+      console.warn("No se ha seleccionado un requerimiento con fecha");
+      return 'Fecha no disponible'; // Retorna un valor predeterminado si no hay fecha
+    }
+  
+    // Verificar si la fecha es válida
+    const fechaValida = new Date(fecha);
+    if (isNaN(fechaValida.getTime())) {
+      console.error("Fecha inválida:", fecha);
+      return 'Fecha no válida'; // Retorna un valor predeterminado si la fecha no es válida
+    }
+  
+    const opciones = {
+      weekday: 'long', // Nombre del día de la semana
+      year: 'numeric', // Año completo
+      month: 'long', // Mes completo
+      day: 'numeric', // Día
+      hour: '2-digit', // Hora con 2 dígitos
+      minute: '2-digit', // Minuto con 2 dígitos
+    };
+  
+    return new Intl.DateTimeFormat('es-ES', opciones).format(fechaValida);
+  };
+  
+  
+
   // Filtro y ordeno los requerimientos de la tabla en forma descendente por FECHA.
   useEffect(() => {
   const sortedRows = [...initialRows].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
@@ -199,6 +227,7 @@ export const TablaRequerimiento: React.FC<CrudGridProps> = ({ columns, initialRo
     setSelectedRow(row);
     setOpenViewDialog(true);
   };
+  console.log("usaurio seleccionado",selectedRow);
 
   return (
     
@@ -266,35 +295,84 @@ export const TablaRequerimiento: React.FC<CrudGridProps> = ({ columns, initialRo
   </IconButton>
 </DialogTitle>
 
-        <DialogContent>
-          <Grid container spacing={3}>
-            {/* Columna izquierda */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ p: 2, backgroundColor: "#fafafa" }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#333" }}>
-                  Información General
-                </Typography>
-                {columns
-                  .filter((col) => col.field !== 'acciones') // No incluir la columna de acciones
-                  .map((col) => (
-                    <TextField
-                      key={col.field}
-                      margin="dense"
-                      label={col.headerName}
-                      fullWidth
-                      type={col.type === 'number' ? 'number' : 'text'}
-                      value={selectedRow?.[col.field] || ''}
-                      InputProps={{
-                        readOnly: true,
-                        style: {
-                          backgroundColor: '#f0f0f0',
-                          color: '#555',
-                          borderRadius: "4px",
-                        },
-                      }}
-                      sx={{ mb: 1.5 }}
-                    />
-                  ))}
+<DialogContent>
+  <Grid container spacing={3}>
+    {/* Columna izquierda */}
+    <Grid item xs={12} md={6}>
+      <Card sx={{ p: 2, backgroundColor: "#fafafa" }}>
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#333" }}>
+          Información General
+        </Typography>
+        {columns
+          .filter((col) => col.field !== 'acciones') // No incluir la columna de acciones
+          .map((col) => {
+            // Si la columna es fechaHoraAlta, formateamos la fecha
+            const valor = col.field === 'fecha'
+              ? formatearFecha(selectedRow?.fecha) // Formatear solo si es fechaHoraAlta
+              : selectedRow?.[col.field] || ''; // Mostrar el valor normal para otras columnas
+
+            return (
+              <TextField
+                key={col.field}
+                margin="dense"
+                label={col.headerName}
+                fullWidth
+                type={col.type === 'number' ? 'number' : 'text'}
+                value={valor}
+                InputProps={{
+                  readOnly: true,
+                  style: {
+                    backgroundColor: '#f0f0f0',
+                    color: '#555',
+                    borderRadius: "4px",
+                  },
+                }}
+                sx={{ mb: 1.5 }}
+              />
+            );
+          })}
+
+                   {/* Mostrar la descripción si está definida */}
+          {selectedRow?.descripcion && (
+            <TextField
+              margin="dense"
+              label="Descripción"
+              fullWidth
+              multiline
+              rows={6}  // Ajusta la cantidad de filas visibles para hacer el campo más grande
+              value={selectedRow.descripcion}
+              InputProps={{
+                readOnly: true,
+                style: {
+                  backgroundColor: '#f0f0f0',
+                  color: '#555',
+                  borderRadius: "4px",
+                },
+              }}
+              sx={{ mb: 1.5 }}
+            />
+          )}
+            {/* Mostrar el Emisor */}
+            {selectedRow?.nombreCompletoEmisor && (
+            <TextField
+              margin="dense"
+              label="Emisor"
+              fullWidth
+              value={selectedRow.nombreCompletoEmisor}  // Asumiendo que el campo "emisor" contiene el nombre o legajo
+              InputProps={{
+                readOnly: true,
+                style: {
+                  backgroundColor: '#f0f0f0',
+                  color: '#555',
+                  borderRadius: "4px",
+                },
+              }}
+              sx={{ mb: 1.5 }}
+            />
+          )}
+
+          
+            
               </Card>
             </Grid>
 

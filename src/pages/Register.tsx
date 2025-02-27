@@ -124,65 +124,66 @@ if (response.ok) {
   };
 
   
- const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  const validationErrors = {}; // Inicializa un objeto de errores.
-  if (!formData.username) validationErrors.username = "El nombre de usuario es obligatorio."; // Si está vacio, agrega una clave username al objeto con el mensaje de error.
-  if (usernameAvailable === false) validationErrors.username = "El nombre de usuario no está disponible.";  // Agregar esta validación
-  if (!formData.email) validationErrors.email = "El correo electrónico es obligatorio.";
-  if (emailAvailable === false) validationErrors.email = "Este email ya está en uso";
-  if (!formData.clave) validationErrors.clave = "La contraseña es obligatoria.";
-  if (formData.clave !== formData.repetirClave)
-    validationErrors.repetirClave = "Las contraseñas no coinciden.";
-  if (!formData.apellido) validationErrors.apellido = "El apellido es obligatorio.";
-  if (!formData.nombre) validationErrors.nombre = "El nombre es obligatorio.";
-  if (!formData.cargoId) validationErrors.cargoId = "El cargo es obligatorio.";
-  if (!formData.departamentoId) validationErrors.departamentoId = "El departamento es obligatorio.";
-
-  setErrors(validationErrors); // Despues de realizar todas las validaciones, este objeto se pasa a la funcion.
-
-  if (Object.keys(validationErrors).length === 0 && usernameAvailable === true && emailAvailable ===true ) { // Pasa si el objeto de errores no tiene Solo si el username y el email son válidos
-    try {
-      const dataToSend = {
-        nombre: formData.nombre,
-        apellido: formData.apellido,
-        username: formData.username,
-        clave: formData.clave,
-        email: formData.email,
-        departamento_id: parseInt(formData.departamentoId),
-        cargo_id: parseInt(formData.cargoId),
-      };
-
-      const response = await fetch("http://localhost:8080/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dataToSend),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        Swal.fire(`Error: ${errorData.message || "Hubo un problema con el registro."}`, "error");
-      } else {
-        Swal.fire("Registro exitoso", "Tu cuenta ha sido creada correctamente", "success");
-        setFormData({
-          nombre: "",
-          apellido: "",
-          email: "",
-          username: "",
-          clave: "",
-          repetirClave: "",
-          departamentoId: "",
-          cargoId: "",
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    const validationErrors = {}; // Inicializa un objeto de errores.
+    if (!formData.username) validationErrors.username = "El nombre de usuario es obligatorio.";
+    if (usernameAvailable === false) validationErrors.username = "El nombre de usuario no está disponible.";
+    if (!formData.email) validationErrors.email = "El correo electrónico es obligatorio.";
+    if (emailAvailable === false) validationErrors.email = "Este email ya está en uso";
+    if (!formData.clave) validationErrors.clave = "La contraseña es obligatoria.";
+    if (formData.clave.length < 8) validationErrors.clave = "La contraseña debe tener al menos 8 caracteres."; // Nueva validación
+    if (formData.clave !== formData.repetirClave)
+      validationErrors.repetirClave = "Las contraseñas no coinciden.";
+    if (!formData.apellido) validationErrors.apellido = "El apellido es obligatorio.";
+    if (!formData.nombre) validationErrors.nombre = "El nombre es obligatorio.";
+    if (!formData.cargoId) validationErrors.cargoId = "El cargo es obligatorio.";
+    if (!formData.departamentoId) validationErrors.departamentoId = "El departamento es obligatorio.";
+  
+    setErrors(validationErrors); // Después de realizar todas las validaciones, este objeto se pasa a la función.
+  
+    if (Object.keys(validationErrors).length === 0 && usernameAvailable === true && emailAvailable === true) {
+      try {
+        const dataToSend = {
+          nombre: formData.nombre,
+          apellido: formData.apellido,
+          username: formData.username,
+          clave: formData.clave,
+          email: formData.email,
+          departamento_id: parseInt(formData.departamentoId),
+          cargo_id: parseInt(formData.cargoId),
+        };
+  
+        const response = await fetch("http://localhost:8080/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dataToSend),
         });
-        navigate("/"); // Redirige al login
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          Swal.fire(`Error: ${errorData.message || "Hubo un problema con el registro."}`, "error");
+        } else {
+          Swal.fire("Registro exitoso", "Tu cuenta ha sido creada correctamente", "success");
+          setFormData({
+            nombre: "",
+            apellido: "",
+            email: "",
+            username: "",
+            clave: "",
+            repetirClave: "",
+            departamentoId: "",
+            cargoId: "",
+          });
+          navigate("/"); // Redirige al login
+        }
+      } catch (error) {
+        console.error("Error de conexión:", error);
+        Swal.fire("No se pudo conectar al servidor. Inténtalo más tarde.", "error");
       }
-    } catch (error) {
-      console.error("Error de conexión:", error);
-      Swal.fire("No se pudo conectar al servidor. Inténtalo más tarde.", "error");
     }
-  }
-};
+  };
   
   
 

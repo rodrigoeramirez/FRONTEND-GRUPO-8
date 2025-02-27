@@ -178,6 +178,7 @@ const PageRequerimiento = () => {
           estado: item.estadoRequerimientoNombre,
           propietario: item.nombreCompletoDestinatario || 'Sin propietario',
           emisor: item.emisorLegajo,
+          nombreCompletoEmisor:item.nombreCompletoEmisor,
           destinatarioId: item.destinatarioId,
           archivosAdjuntos: item.archivosAdjuntos,
           comentarios: item.comentarios,

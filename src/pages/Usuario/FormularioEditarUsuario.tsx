@@ -16,87 +16,63 @@ import {
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const FormularioEditarUsuario = ({ usuario, onCancel, onSave }) => {
-  
   const [errors, setErrors] = useState({});
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null); // Estado para validar que el mail no exista en la BD
-  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null); // Estado para validar que el mail no exista en la BD
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
   const [cambiarClave, setCambiarClave] = useState(false);
   const [nuevaClave, setNuevaClave] = useState("");
   const [repetirClave, setRepetirClave] = useState("");
-  // Estados para mostrar u ocultar contraseña
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+  const [passwordMatchError, setPasswordMatchError] = useState(""); // Estado para el error de coincidencia de contraseñas
+
   const [formData, setFormData] = useState({
     nombre: usuario.nombre,
     apellido: usuario.apellido,
     username: usuario.username,
-    email:usuario.email,
+    email: usuario.email,
     cargo_id: usuario.cargo_id,
     departamento_id: usuario.departamento_id,
-    clave:""
+    clave: ""
   });
 
+  const { getUsuarios, validateEmail, validateUsername } = useUsuario();
+  const { cargos, getCargos } = useCargo();
+  const { departamentos, getDepartamentos } = useDepartamento();
 
-  console.log(usuario);
-  const {getUsuarios, validateEmail, validateUsername, } = useUsuario();
-  // Con este useEffect ejecuto el metodo getEstados.
-  useEffect(()=>{
+  useEffect(() => {
     getUsuarios();
-  },[]); // [] esto hace que se ejecute una sola vez.
-
-  // Esto lo hago para obtener los cargos
-  const {cargos, getCargos,} = useCargo();
-  useEffect(()=>{
     getCargos();
-  },[]);
-
-  // Esto lo hago para obtener los departamentos
-  const {departamentos, getDepartamentos,} = useDepartamento();
-  useEffect(()=>{
     getDepartamentos();
-  },[]);
+  }, []);
 
   const validateCorreo = async (email) => {
-    if (!email || email === usuario.email) { // Si el email no cambia, no valida
-      setEmailAvailable(null); // Si no hay texto reinicia el estado
+    if (!email || email === usuario.email) {
+      setEmailAvailable(null);
       return;
     }
-  
     try {
       const response = await validateEmail(email);
-  
-      if (response) { // Si la respuesta es verdadera (email disponible)
-        setEmailAvailable(response); 
-      } else {
-        setEmailAvailable(false); // Si no está disponible o hubo un error
-      }
-      
+      setEmailAvailable(response);
     } catch (error) {
       console.error("Error validando el email:", error);
-      setEmailAvailable(false); // Manejar errores
+      setEmailAvailable(false);
     }
   };
-  
+
   const validateUser = async (username) => {
-    if (!username || username === usuario.username) { // Si el username no cambia, no valida
-      setUsernameAvailable(null); // Si no hay texto reinicia el estado
+    if (!username || username === usuario.username) {
+      setUsernameAvailable(null);
       return;
     }
-  
     try {
       const response = await validateUsername(username);
-  
-      if (response) { // Si la respuesta es verdadera (username disponible)
-        setUsernameAvailable(response); 
-      } else {
-        setUsernameAvailable(false); // Si no está disponible o hubo un error
-      }
-      
+      setUsernameAvailable(response);
     } catch (error) {
-      console.error("Error validando el email:", error);
-      setEmailAvailable(false); // Manejar errores
+      console.error("Error validando el username:", error);
+      setUsernameAvailable(false);
     }
-  };  
+  };
 
   const handleChange = (field) => (event) => {
     setFormData({
@@ -105,48 +81,20 @@ const FormularioEditarUsuario = ({ usuario, onCancel, onSave }) => {
     });
   };
 
-  // Valido el formulario.
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.nombre.trim()) {
-      newErrors.nombre = "El nombre es obligatorio.";
-    }
-
-    if (!formData.apellido.trim()) {
-      newErrors.apellido = "El apellido es obligatorio.";
-    }
-
-    if (!formData.apellido.trim()) {
-        newErrors.username = "El username es obligatorio.";
-    }
-
-    if (!formData.email.trim()) {
-        newErrors.email = "El email es obligatorio.";
-    }
-    if (!formData.cargo_id) {
-        newErrors.cargo_id = "Debe seleccionar un cargo.";
-    }
-    if (!formData.departamento_id) {
-        newErrors.departamento_id = "Debe seleccionar un departamento.";
-    }
-
+    if (!formData.nombre.trim()) newErrors.nombre = "El nombre es obligatorio.";
+    if (!formData.apellido.trim()) newErrors.apellido = "El apellido es obligatorio.";
+    if (!formData.username.trim()) newErrors.username = "El username es obligatorio.";
+    if (!formData.email.trim()) newErrors.email = "El email es obligatorio.";
+    if (!formData.cargo_id) newErrors.cargo_id = "Debe seleccionar un cargo.";
+    if (!formData.departamento_id) newErrors.departamento_id = "Debe seleccionar un departamento.";
     setErrors(newErrors);
-
-    // Retorna true si no hay errores
     return Object.keys(newErrors).length === 0;
   };
 
-  // Valido la clave.
   const validateClave = () => {
     if (cambiarClave) {
-      if (nuevaClave !== repetirClave) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          clave: "Las claves no coinciden.",
-        }));
-        return false;
-      }
       if (!nuevaClave || !repetirClave) {
         setErrors((prevErrors) => ({
           ...prevErrors,
@@ -154,29 +102,40 @@ const FormularioEditarUsuario = ({ usuario, onCancel, onSave }) => {
         }));
         return false;
       }
+      if (nuevaClave !== repetirClave) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          clave: "Las claves no coinciden.",
+        }));
+        return false;
+      }
     }
     return true;
   };
-  
- // Devuelve el control y los datos a PageUsuario para llamar al endpoint y realizar la edición en la BD.
- const handleSave = () => {
-  if (validateForm() && validateClave()) {
-    const dataToSave = {
-      ...formData,
-      // Solo asigna la clave si se va a cambiar y si 'nuevaClave' no está vacía
-      clave: cambiarClave && nuevaClave ? nuevaClave : undefined, // Si no cambia la clave, la clave se deja como undefined
-    };
 
-    if (onSave) {
-      //console.log("Esto es modificadoooooo:", dataToSave);
-      onSave(dataToSave, usuario.legajo, usuario.username); // Guarda los datos
+  const handleSave = () => {
+    if (validateForm() && validateClave()) {
+      const dataToSave = {
+        ...formData,
+        clave: cambiarClave && nuevaClave ? nuevaClave : undefined,
+      };
+      if (onSave) {
+        onSave(dataToSave, usuario.legajo, usuario.username);
+      }
+      onCancel();
     }
-    onCancel();
-  }
-};
+  };
+
+  // Validar coincidencia de contraseñas mientras se escribe
+  const validatePasswordMatch = (value) => {
+    if (value !== nuevaClave) {
+      setPasswordMatchError("Las contraseñas no coinciden.");
+    } else {
+      setPasswordMatchError("");
+    }
+  };
 
   return (
-    
     <Box sx={{ mt: 0 }}>
       <TextField
         label="Nombre"
@@ -204,22 +163,22 @@ const FormularioEditarUsuario = ({ usuario, onCancel, onSave }) => {
         onChange={(e) => {
           const newUsername = e.target.value;
           setFormData({ ...formData, username: newUsername });
-          setErrors({ ...errors, username: "" }); // Limpia el error al escribir
+          setErrors({ ...errors, username: "" });
           validateUser(newUsername);
         }}
         fullWidth
-        error={!!errors.username || usernameAvailable === false} // Error si está vacío o no disponible
+        error={!!errors.username || usernameAvailable === false}
         helperText={
-          errors.username || // Muestra el mensaje de error si está vacío
-          (usernameAvailable === false ? "El username ya está en uso." : "") // Si no está disponible
+          errors.username ||
+          (usernameAvailable === false ? "El username ya está en uso." : "")
         }
         sx={{
           "& .MuiOutlinedInput-root": {
             borderColor: usernameAvailable === null
-              ? "" // Sin color cuando no se ha validado
+              ? ""
               : usernameAvailable
-              ? "green" // Verde si está disponible
-              : "red", // Rojo si no está disponible
+              ? "green"
+              : "red",
           },
         }}
       />
@@ -230,7 +189,7 @@ const FormularioEditarUsuario = ({ usuario, onCancel, onSave }) => {
         onChange={(e) => {
           const newEmail = e.target.value;
           setFormData({ ...formData, email: newEmail });
-          setErrors({ ...errors, email: "" }); // Limpia el error cuando cambia el campo
+          setErrors({ ...errors, email: "" });
         }}
         onBlur={(e) => {
           const email = e.target.value;
@@ -241,55 +200,52 @@ const FormularioEditarUsuario = ({ usuario, onCancel, onSave }) => {
               email: "El formato del correo electrónico no es válido.",
             }));
           } else {
-            validateCorreo(email); // Llama a la validación de la BD si el formato es válido
+            validateCorreo(email);
           }
         }}
         fullWidth
-        error={!!errors.email || emailAvailable === false} // Marca como error si el formato o la disponibilidad fallan
+        error={!!errors.email || emailAvailable === false}
         helperText={
           errors.email ||
           (emailAvailable === false ? "El email ya está en uso." : "")
         }
       />
-      
       <FormControl fullWidth margin="normal" error={!!errors.cargo_id}>
-  <InputLabel>Cargo</InputLabel>
-  <Select
-    value={formData.cargo_id}  // Este valor debe estar sincronizado con formData
-    onChange={handleChange("cargo_id")}
-    label="Cargo"
-  >
-    {cargos.map((cargo) => (
-      <MenuItem key={cargo.id} value={cargo.id}>
-        {cargo.nombre}
-      </MenuItem>
-    ))}
-  </Select>
-  <FormHelperText>{errors.cargo_id}</FormHelperText>
-</FormControl>
-
-<FormControl fullWidth margin="normal" error={!!errors.departamento_id}>
-  <InputLabel>Departamento</InputLabel>
-  <Select
-    value={formData.departamento_id}  // Este valor debe estar sincronizado con formData
-    onChange={handleChange("departamento_id")}
-    label="Departamento"
-  >
-    {departamentos.map((departamento) => (
-      <MenuItem key={departamento.id} value={departamento.id}>
-        {departamento.nombre}
-      </MenuItem>
-    ))}
-  </Select>
-  <FormHelperText>{errors.departamento_id}</FormHelperText>
-</FormControl>
-<Button variant="outlined" onClick={() => setCambiarClave(!cambiarClave)} color="primary">
+        <InputLabel>Cargo</InputLabel>
+        <Select
+          value={formData.cargo_id}
+          onChange={handleChange("cargo_id")}
+          label="Cargo"
+        >
+          {cargos.map((cargo) => (
+            <MenuItem key={cargo.id} value={cargo.id}>
+              {cargo.nombre}
+            </MenuItem>
+          ))}
+        </Select>
+        <FormHelperText>{errors.cargo_id}</FormHelperText>
+      </FormControl>
+      <FormControl fullWidth margin="normal" error={!!errors.departamento_id}>
+        <InputLabel>Departamento</InputLabel>
+        <Select
+          value={formData.departamento_id}
+          onChange={handleChange("departamento_id")}
+          label="Departamento"
+        >
+          {departamentos.map((departamento) => (
+            <MenuItem key={departamento.id} value={departamento.id}>
+              {departamento.nombre}
+            </MenuItem>
+          ))}
+        </Select>
+        <FormHelperText>{errors.departamento_id}</FormHelperText>
+      </FormControl>
+      <Button variant="outlined" onClick={() => setCambiarClave(!cambiarClave)} color="primary">
         {cambiarClave ? "Cancelar cambio de clave" : "Cambiar clave"}
       </Button>
 
       {cambiarClave && (
         <>
-          {/* Nueva Clave */}
           <TextField
             label="Nueva clave"
             fullWidth
@@ -307,15 +263,18 @@ const FormularioEditarUsuario = ({ usuario, onCancel, onSave }) => {
               ),
             }}
           />
-
-          {/* Repetir Clave */}
           <TextField
             label="Repetir nueva clave"
             fullWidth
             type={showRepeatPassword ? "text" : "password"}
             value={repetirClave}
-            onChange={(e) => setRepetirClave(e.target.value)}
+            onChange={(e) => {
+              setRepetirClave(e.target.value);
+              validatePasswordMatch(e.target.value); // Validar coincidencia mientras se escribe
+            }}
             margin="normal"
+            error={!!passwordMatchError}
+            helperText={passwordMatchError}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -328,29 +287,27 @@ const FormularioEditarUsuario = ({ usuario, onCancel, onSave }) => {
           />
         </>
       )}
-  {/* Botones fijos en la parte inferior */}
-  <Box
-    sx={{
-      position: "sticky",
-      bottom: 0,
-      backgroundColor: "#fff",
-      boxShadow: "0px -2px 10px rgba(0, 0, 0, 0.1)",
-      p: 2,
-      zIndex: 1000,
-      display: "flex",
-      justifyContent: "flex-end",
-      gap: 2,
-    }}
-  >
-    <Button variant="outlined" onClick={onCancel} color="error">
-      Cancelar
-    </Button>
-    <Button variant="contained" onClick={handleSave} color="primary">
-      Guardar Cambios
-    </Button>
-  </Box>
-</Box>
-
+      <Box
+        sx={{
+          position: "sticky",
+          bottom: 0,
+          backgroundColor: "#fff",
+          boxShadow: "0px -2px 10px rgba(0, 0, 0, 0.1)",
+          p: 2,
+          zIndex: 1000,
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 2,
+        }}
+      >
+        <Button variant="outlined" onClick={onCancel} color="error">
+          Cancelar
+        </Button>
+        <Button variant="contained" onClick={handleSave} color="primary">
+          Guardar Cambios
+        </Button>
+      </Box>
+    </Box>
   );
 };
 

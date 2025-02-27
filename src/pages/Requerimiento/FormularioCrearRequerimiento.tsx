@@ -60,10 +60,13 @@ const FormularioCrearRequerimiento = ({ onCancel, onSave }) => {
     const fetchCodigo = async () => {
         if (formData.tipo) {
           try {
-            const secuencial = await getUltimoSecuencial(formData.tipo); // Llama al backend y me devuelve DIRECTAMENTE el siguiente número a insertar (NO EL ULTIMO INSERTADO).
+            const secuencial = (await getUltimoSecuencial(formData.tipo)); // Llama al backend y me devuelve DIRECTAMENTE el siguiente número a insertar (NO EL ULTIMO INSERTADO).
+            console.log("Este es el ultimo secuencial",secuencial);
+            //formData.tipo= id del tipo requerimiento.
             if (secuencial !== null) {
               const anio = new Date().getFullYear(); // Obtiene el año actual
-              const tipoSeleccionado = tipos.find((tipo) => tipo.id === formData.tipo); // Encuentra el tipo
+              const tipoSeleccionado = tipos.find((tipo) => tipo.id === formData.tipo); // Obtengo el objeto completo del tipo.
+              console.log("Este es el tipo seleccionado",tipoSeleccionado);
               const codigoGenerado = `${tipoSeleccionado?.codigo}-${anio}-${String(secuencial).padStart(10, "0")}`; // Genera el código
               // padStart es una forma de formatear números (en este caso, secuencial) para que siempre tengan una longitud específica (10 caracteres), rellenando con ceros al principio si es necesario.
               setFormData((prev) => ({ ...prev, codigo: codigoGenerado })); // Actualiza el estado

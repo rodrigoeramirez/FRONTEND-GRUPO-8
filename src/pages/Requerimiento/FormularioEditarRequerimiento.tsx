@@ -26,20 +26,27 @@ const FormularioEditarRequerimiento = ({ requerimiento, onCancel, onSave }) => {
   const { prioridades, getPrioridades } = usePrioridad();
   const { usuarios, getUsuarios } = useUsuario();
   const { getArchivoAdjunto, deleteArchivoAdjunto } = useArchivoAdjunto();
-  const {requerimientos,getRequerimientos} = useRequerimiento();
+  const {requerimientos,getRequerimientos, getUltimoSecuencial} = useRequerimiento();
   const { comentarios, getComentariosByRequerimiento, createComentarioRequerimiento } = useComentarioRequerimiento();
   const [nuevoComentario, setNuevoComentario] = useState({ asunto: "", descripcion: "", archivosAdjuntos: [] });
+  const [prevTipoRequerimientoId, setPrevTipoRequerimientoId] = useState(requerimiento.tipoRequerimientoId); // Guardamos el tipo original
+  const [originalCodigo, setOriginalCodigo] = useState(requerimiento.codigo); // Guardamos el código original
   const { userInfo } = useAuth(); // Lo utilizo para obtener el id del usuario logeado y cargar en el formulario el emisor.
   
 
   // Uso las funciones del context
   useEffect(() => {
-    getTipoRequerimiento();
     getEstados();
     getPrioridades();
     getUsuarios();
     getRequerimientos();
   }, []);
+
+  useEffect(() => {
+    getTipoRequerimiento();
+
+  }, [getTipoRequerimiento]);
+  
 
   useEffect(() => {
     getComentariosByRequerimiento(requerimiento.codigo);
@@ -60,6 +67,19 @@ const FormularioEditarRequerimiento = ({ requerimiento, onCancel, onSave }) => {
       ...prev,
       archivosAdjuntos: [...prev.archivosAdjuntos, ...archivosValidos],
     }));
+  };
+
+  const formatearFecha = (fecha) => {
+    const opciones = {
+      weekday: 'long', // Día de la semana
+      year: 'numeric', // Año completo
+      month: 'long', // Mes completo
+      day: 'numeric', // Día del mes
+      hour: '2-digit', // Hora con dos dígitos
+      minute: '2-digit', // Minutos con dos dígitos
+    };
+  
+    return new Intl.DateTimeFormat('es-ES', opciones).format(new Date(fecha));
   };
 
   const handleAgregarComentario = async () => {
@@ -94,6 +114,33 @@ const FormularioEditarRequerimiento = ({ requerimiento, onCancel, onSave }) => {
     }
   };
 
+  // Cuando cambia el tipo de requerimiento, actualizamos el código si es necesario
+  useEffect(() => {
+    const fetchCodigo = async () => {
+      // Si el tipo cambia y es diferente al tipo original
+      if (formData.tipoRequerimientoId !== prevTipoRequerimientoId) {
+        try {
+          const secuencial = (await getUltimoSecuencial(formData.tipoRequerimientoId));
+          const anio = new Date().getFullYear();
+          const tipoSeleccionado = tipos.find((tipo) => tipo.id === formData.tipoRequerimientoId);
+
+          if (!tipoSeleccionado) return;
+
+          const codigoGenerado = `${tipoSeleccionado.codigo}-${anio}-${String(secuencial).padStart(10, "0")}`;
+
+          // Actualizamos el estado con el nuevo código generado
+          setFormData((prev) => ({ ...prev, codigo: codigoGenerado }));
+        } catch (error) {
+          console.error("Error al generar el código:", error);
+        }
+      } else if (formData.tipoRequerimientoId === prevTipoRequerimientoId) {
+        // Si el tipo vuelve al original, restauramos el código original
+        setFormData((prev) => ({ ...prev, codigo: originalCodigo }));
+      }
+    };
+
+    fetchCodigo();
+  }, [formData.tipoRequerimientoId, tipos, prevTipoRequerimientoId, originalCodigo]);
 
   // Obtengo las categorias segun el Tipo de Requerimiento
   useEffect(() => {
@@ -104,9 +151,10 @@ const FormularioEditarRequerimiento = ({ requerimiento, onCancel, onSave }) => {
       setFilteredCategorias([]);
     }
   }, [formData.tipoRequerimientoId, tipos]);
+
+
   
-   // 🔥 Mantener archivos existentes sin enviarlos en la actualización
-  
+   // Mantener archivos existentes sin enviarlos en la actualización
   const archivosNuevos = formData.nuevosArchivos || [];
 
   const handleFileUpload = (event) => {
@@ -149,7 +197,8 @@ const FormularioEditarRequerimiento = ({ requerimiento, onCancel, onSave }) => {
     }));
 
     event.target.value = null;
-  };
+  };  
+  
 
   const handleRemoveFile = (index) => {
     const nuevosArchivos = archivosNuevos.filter((_, i) => i !== index);
@@ -262,6 +311,7 @@ const FormularioEditarRequerimiento = ({ requerimiento, onCancel, onSave }) => {
 
       // Crear el objeto de datos del requerimiento
       const dataToSave = {
+        codigo: formData.codigo,
         asunto: formData.asunto,
         descripcion: formData.descripcion,
         tipoRequerimientoId: formData.tipoRequerimientoId,
@@ -296,7 +346,6 @@ const FormularioEditarRequerimiento = ({ requerimiento, onCancel, onSave }) => {
     }
   };
 
-  console.log("Requerimiento a editar:",formData) // Esto me imprime el objeto "requerimiento" que está llegando al componente.
 
   return (
     
@@ -317,7 +366,7 @@ const FormularioEditarRequerimiento = ({ requerimiento, onCancel, onSave }) => {
       <TextField
         label="Fecha"
         fullWidth
-        value={formData.fechaHoraAlta}
+        value={formatearFecha(formData.fechaHoraAlta)}
         disabled
         margin="normal"
       />
@@ -660,7 +709,7 @@ const FormularioEditarRequerimiento = ({ requerimiento, onCancel, onSave }) => {
             )}
 
             {/* Agregar Comentario */}
-            {(formData.emisor === userInfo?.legajo || formData.destinatarioId === userInfo?.legajo || formData.estadoRequerimientoNombre === "Asignado") && (
+            {(formData.emisorLegajo === userInfo?.legajo || formData.destinatarioId === userInfo?.legajo || formData.estadoRequerimientoNombre === "Asignado") && (
               <Box sx={{ mt: 3, p: 2, backgroundColor: "#f5f5f5", borderRadius: "4px" }}>
                 <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
                   Agregar Comentario
@@ -685,7 +734,7 @@ const FormularioEditarRequerimiento = ({ requerimiento, onCancel, onSave }) => {
                   onChange={(e) => setNuevoComentario({ ...nuevoComentario, descripcion: e.target.value })}
                   sx={{ mb: 2 }}
                 />
-                <Button variant="outlined" component="label">
+                <Button variant="outlined" component="label" sx={{mt:1}}>
                   Subir Archivos
                   <input type="file" hidden multiple onChange={handleFileChange} />
                 </Button>
@@ -726,7 +775,7 @@ const FormularioEditarRequerimiento = ({ requerimiento, onCancel, onSave }) => {
                   variant="contained"
                   color="primary"
                   onClick={handleAgregarComentario}
-                  sx={{ mt: 2 }}
+                  sx={{ ml:1  ,mt: 1 }}
                 >
                   Agregar Comentario
                 </Button>
